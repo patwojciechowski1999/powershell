@@ -8,7 +8,9 @@ function Get-SecEventInfo {
 #>  
     [CmdletBinding()]
     Param (
-        [Parameter(ParameterSetName="Logs")]
+        [Parameter(ParameterSetName="Logs",
+                    ValueFromPipeline=$true,
+                    ValueFromPipelineByPropertyName=$true)]
         [Alias("Hostname")]
         [ValidateSet("LON-DC1","LON-SVR1","LON-CL1")]
         [string[]]$ComputerName = $env:COMPUTERNAME,
@@ -46,3 +48,4 @@ function Get-SecEventInfo {
     }   #PROCESS
     END{}
 }   #function
+
