@@ -30,11 +30,11 @@ function Get-SecEventInfo {
             try {
                 Write-Verbose "Bout to conn to $item"
                 Write-Host "`nConnecting to $item" -ForegroundColor Red
-                Get-EventLog -Logname Security -ComputerName $item  |
+                Get-EventLog -Logname Security -ComputerName $item -ErrorAction Stop -ErrorVariable MyErr |
                     Where-Object EventID -eq $EventID   |
                         Select-Object -First $Count |
                             Format-Table 
-                $OS = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $item -ErrorAction Stop -ErrorVariable MyErr |
+                $OS = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $item 
                 $user = whoami
                 Write-Host "------------- PODSUMOWANIE --------------"
                 $summ = [ordered]@{
