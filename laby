@@ -27,23 +27,31 @@ function Get-SecEventInfo {
     BEGIN{}
     PROCESS{
         foreach ($item in $ComputerName) {
-            Write-Verbose "Bout to conn to $item"
-            Write-Host "`nConnecting to $item" -ForegroundColor Red
-            Get-EventLog -Logname Security -ComputerName $item  |
-                Where-Object EventID -eq $EventID   |
-                    Select-Object -First $Count |
-                        Format-Table 
-            $OS = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $item | select caption
-            $user = whoami
-            Write-Host "------------- PODSUMOWANIE --------------"
-            $summ = [ordered]@{
-                'Computer' = "$item";
-                'User'  =   $user;
-                'System'    =   $OS.caption
-                }
-            $Output = net-object -TypeName PSObject -propety $summ
-            Write-Output $Output
-            Write-Output $log
+            try {
+                Write-Verbose "Bout to conn to $item"
+                Write-Host "`nConnecting to $item" -ForegroundColor Red
+                Get-EventLog -Logname Security -ComputerName $item  |
+                    Where-Object EventID -eq $EventID   |
+                        Select-Object -First $Count |
+                            Format-Table 
+                $OS = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $item -ErrorAction Stop -ErrorVariable MyErr |
+                $user = whoami
+                Write-Host "------------- PODSUMOWANIE --------------"
+                $summ = [ordered]@{
+                    'Computer' = "$item";
+                    'User'  =   $user;
+                    'System'    =   $OS.caption
+                    }
+                $Output = net-object -TypeName PSObject -propety $summ
+                Write-Output $Output
+                Write-Output $log
+                }   #try
+                catch {
+                    Write-Output $MyErr
+                }   #catch
+                finally{
+                    Write-Host "------------------------ END"
+                }   #finally
         }   #foreach
     }   #PROCESS
     END{}
