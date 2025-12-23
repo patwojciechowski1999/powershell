@@ -1,0 +1,48 @@
+function Get-SecEventInfo {
+<#
+.SYNOPSIS
+.EXAMPLE
+    Przykład uzycia
+.DESCRIPTION
+    Opis funkcji
+#>  
+    [CmdletBinding()]
+    Param (
+        [Parameter(ParameterSetName="Logs")]
+        [Alias("Hostname")]
+        [ValidateSet("LON-DC1","LON-SVR1","LON-CL1")]
+        [string[]]$ComputerName = $env:COMPUTERNAME,
+        [Alias("InstanceID")]
+        [Parameter(ParameterSetName="Logs")]
+        [int]$EventID = 4624,
+        [int]$Count = 5,
+
+        [Parameter(ParameterSetName="list")]
+        [switch]$List,
+        [Parameter(ParameterSetName="Clear")]
+        [switch]$Clear
+    )   #param
+    BEGIN{}
+    PROCESS{
+        foreach ($item in $ComputerName) {
+            Write-Verbose "Bout to conn to $item"
+            Write-Host "`nConnecting to $item" -ForegroundColor Red
+            Get-EventLog -Logname Security -ComputerName $item  |
+                Where-Object EventID -eq $EventID   |
+                    Select-Object -First $Count |
+                        Format-Table 
+            $OS = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $item | select caption
+            $user = whoami
+            Write-Host "------------- PODSUMOWANIE --------------"
+            $summ = [ordered]@{
+                'Computer' = "$item";
+                'User'  =   $user;
+                'System'    =   $OS.caption
+                }
+            $Output = net-object -TypeName PSObject -propety $summ
+            Write-Output $Output
+            Write-Output $log
+        }   #foreach
+    }   #PROCESS
+    END{}
+}   #function
